@@ -10,6 +10,9 @@
 ;;
 
 ;; constants
+
+;;owner
+(define-constant contract-owner tx-sender)
 ;;
 
 ;; data vars
