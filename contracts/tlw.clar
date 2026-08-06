@@ -35,6 +35,33 @@
 ;;
 
 ;; public functions
+;;lock function
+(define-public (lock (new-beneficiary principal) (unlock-at uint) (amount uint))
+    (begin 
+        ;;only contract-owner can call lock
+        (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+
+        ;;wallet cannot be locked twice
+        (asserts! (is-none (var-get beneficiary)) err-already-locked)
+
+        ;;unlock-at should be greater than current height
+        (asserts! (> unlock-at stacks-block-height) err-unlock-in-past)
+
+        ;;initial deposit should be greater than zero
+        (asserts! (> amount u0) err-no-value)
+
+        ;;make the transfer
+        (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
+
+        ;;set the beneficiary
+        (var-set beneficiary (some new-beneficiary))
+
+        ;;set the height
+        (var-set unlock-height unlock-at)
+
+        (ok true)
+    )
+)
 ;;
 
 ;; read only functions
