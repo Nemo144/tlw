@@ -11,7 +11,7 @@ describe("Testing lock", () => {
     const amount = 10;
 
     const lockResponse = simnet.callPublicFn(
-      "timelocked-wallet",
+      "tlw",
       "lock",
       [Cl.principal(beneficiary), Cl.uint(10), Cl.uint(amount)],
       deployer,
@@ -27,7 +27,7 @@ describe("Testing lock", () => {
     expect(lockResponse.events[0].data).toMatchObject({
       amount: amount.toString(),
       sender: deployer,
-      recipient: `${deployer}.timelocked-wallet`,
+      recipient: `${deployer}.tlw`,
     });
   });
 
@@ -36,7 +36,7 @@ describe("Testing lock", () => {
     const beneficiary = accounts.get("wallet_2")!;
 
     const lockResponse = simnet.callPublicFn(
-      "timelocked-wallet",
+      "tlw",
       "lock",
       [Cl.principal(beneficiary), Cl.uint(10), Cl.uint(10)],
       accountA,
@@ -53,13 +53,13 @@ describe("Testing lock", () => {
     const amount = 10;
 
     const lockResponse1 = simnet.callPublicFn(
-      "timelocked-wallet",
+      "tlw",
       "lock",
       [Cl.principal(beneficiary), Cl.uint(unlockAt), Cl.uint(amount)],
       deployer,
     );
     const lockResponse2 = simnet.callPublicFn(
-      "timelocked-wallet",
+      "tlw",
       "lock",
       [Cl.principal(beneficiary), Cl.uint(unlockAt), Cl.uint(amount)],
       deployer,
@@ -73,7 +73,7 @@ describe("Testing lock", () => {
     expect(lockResponse1.events[0].data).toMatchObject({
       amount: amount.toString(),
       sender: deployer,
-      recipient: `${deployer}.timelocked-wallet`,
+      recipient: `${deployer}.tlw`,
     });
 
     // The second lock fails with err-already-locked (err u101).
@@ -93,7 +93,7 @@ describe("Testing lock", () => {
     simnet.mineEmptyBlocks(targetBlockHeight + 1);
 
     const lockResponse = simnet.callPublicFn(
-      "timelocked-wallet",
+      "tlw",
       "lock",
       [Cl.principal(beneficiary), Cl.uint(targetBlockHeight), Cl.uint(amount)],
       deployer,
