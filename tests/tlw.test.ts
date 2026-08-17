@@ -107,3 +107,60 @@ describe("Testing lock", () => {
     expect(lockResponse.events).toHaveLength(0);
   });
 });
+
+//tests for the bestow function
+describe("Testing bestow", () => {
+  test("Allow the beneficiary to bestow the right to claim to someone else", () => {
+    const deployer = accounts.get("deployer")!;
+    const beneficiary = accounts.get("wallet_1")!;
+    const newBeneficiary = accounts.get("wallet_2")!;
+
+    const lockResponse = simnet.callPublicFn(
+      "tlw",
+      "lock",
+      [Cl.principal(beneficiary), Cl.uint(10), Cl.uint(10)],
+      deployer,
+    );
+    const bestowResponse = simnet.callPublicFn(
+      "tlw",
+      "bestow",
+      [Cl.principal(newBeneficiary)],
+      beneficiary,
+    );
+
+    expect(lockResponse.result).toBeOk(Cl.bool(true));
+    expect(bestowResponse.result).toBeOk(Cl.bool(true));
+  });
+
+  test("Does not allow anyone else to bestow the right to claim to someone else (not even the contract owner)", () => {
+    const deployer = accounts.get("deployer")!;
+    const beneficiary = accounts.get("wallet_1")!;
+    const accountA = accounts.get("wallet_2")!;
+
+    const lockResponse = simnet.callPublicFn(
+      "tlw",
+      "lock",
+      [Cl.principal(beneficiary), Cl.uint(10), Cl.uint(10)],
+      deployer,
+    );
+
+    const bestowResponse1 = simnet.callPublicFn(
+      "tlw",
+      "bestow",
+      [Cl.principal(deployer)],
+      deployer,
+    );
+
+    const bestowResponse2 = simnet.callPublicFn(
+      "tlw",
+      "bestow",
+      [Cl.principal(accountA)],
+      accountA,
+    );
+
+    //all but first call fails
+    expect(lockResponse.result).toBeOk(Cl.bool(true));
+    expect(bestowResponse1.result).toBeErr(Cl.uint(104));
+    expect(bestowResponse2.result).toBeErr(Cl.uint(104));
+  });
+});
