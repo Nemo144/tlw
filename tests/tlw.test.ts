@@ -4,6 +4,7 @@ import { describe, expect, it, test } from "vitest";
 const accounts = simnet.getAccounts();
 const address1 = accounts.get("wallet_1")!;
 
+//testing the lock function
 describe("Testing lock", () => {
   test("Allows the contract owner to lock an amount", () => {
     const deployer = accounts.get("deployer")!;
