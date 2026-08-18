@@ -164,3 +164,82 @@ describe("Testing bestow", () => {
     expect(bestowResponse2.result).toBeErr(Cl.uint(104));
   });
 });
+
+describe("Testing claim", () => {
+  test("Allows the beneficiary to claim the balance when the block-height is reached", () => {
+    const deployer = accounts.get("deployer")!;
+    const beneficiary = accounts.get("wallet_1")!;
+    const targetBlockHeight = 10;
+    const amount = 10;
+
+    simnet.callPublicFn(
+      "tlw",
+      "lock",
+      [Cl.principal(beneficiary), Cl.uint(targetBlockHeight), Cl.uint(amount)],
+      deployer,
+    );
+
+    // Advance the chain until the unlock height.
+    simnet.mineEmptyBlocks(targetBlockHeight);
+
+    const claimResponse = simnet.callPublicFn("tlw", "claim", [], beneficiary);
+
+    // The claim was successful and the STX were transferred.
+    expect(claimResponse.result).toBeOk(Cl.bool(true));
+
+    expect(claimResponse.events[0].data).toMatchObject({
+      amount: amount.toString(),
+      sender: `${deployer}.tlw`,
+      recipient: beneficiary,
+    });
+  });
+
+  test("Does not allow the beneficiary to claim the balance before the block-height is reached", () => {
+    const deployer = accounts.get("deployer")!;
+    const beneficiary = accounts.get("wallet_1")!;
+    const currentHeight = Number(simnet.blockHeight);
+    const targetBlockHeight = currentHeight + 10;
+
+    const amount = 10;
+
+    simnet.callPublicFn(
+      "tlw",
+      "lock",
+      [Cl.principal(beneficiary), Cl.uint(targetBlockHeight), Cl.uint(amount)],
+      deployer,
+    );
+
+    // Advance the chain until the unlock height minus one.
+    simnet.mineEmptyBlocks(5);
+
+    const claimResponse = simnet.callPublicFn("tlw", "claim", [], beneficiary);
+
+    // Should return err-unlock-height-not-reached (err u105).
+    expect(claimResponse.result).toBeErr(Cl.uint(105));
+    expect(claimResponse.events).toHaveLength(0);
+  });
+
+  test("Does not allow anyone else to claim the balance when the block-height is reached", () => {
+    const deployer = accounts.get("deployer")!;
+    const beneficiary = accounts.get("wallet_1")!;
+    const other = accounts.get("wallet_2")!;
+    const targetBlockHeight = 10;
+    const amount = 10;
+
+    simnet.callPublicFn(
+      "tlw",
+      "lock",
+      [Cl.principal(beneficiary), Cl.uint(targetBlockHeight), Cl.uint(amount)],
+      deployer,
+    );
+
+    // Advance the chain until the unlock height.
+    simnet.mineEmptyBlocks(targetBlockHeight);
+
+    const claimResponse = simnet.callPublicFn("tlw", "claim", [], other);
+
+    // Should return err-beneficiary-only (err u104).
+    expect(claimResponse.result).toBeErr(Cl.uint(104));
+    expect(claimResponse.events).toHaveLength(0);
+  });
+});
