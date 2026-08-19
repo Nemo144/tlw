@@ -5,14 +5,19 @@ authors = []
 telemetry = false
 cache_dir = './.cache'
 requirements = []
+[contracts.sc]
+path = 'contracts/sc.clar'
+clarity_version = 4
+epoch = 'latest'
+
 [contracts.tlw]
 path = 'contracts/tlw.clar'
 clarity_version = 3
 epoch = 'latest'
 [repl.analysis]
 passes = [
-    'check_checker',
     'call_checker',
+    'check_checker',
 ]
 
 [repl.analysis.lint_groups]
