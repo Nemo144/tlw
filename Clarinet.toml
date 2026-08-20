@@ -7,7 +7,7 @@ cache_dir = './.cache'
 requirements = []
 [contracts.sc]
 path = 'contracts/sc.clar'
-clarity_version = 4
+clarity_version = 3
 epoch = 'latest'
 
 [contracts.tlw]
